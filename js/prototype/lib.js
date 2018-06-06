@@ -28,6 +28,7 @@ this.anyui = (function(root) {
       }
     }
   };
+  module.applyMixin = applyMixin;
 
   var createGetter = function(prop) {
     return function() {
