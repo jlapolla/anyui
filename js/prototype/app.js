@@ -8,7 +8,24 @@ this.app = (function(root) {
 
   var anyui = root.anyui;
 
+  var Math = root.Math;
+  var Object = root.Object;
   var Set = root.Set;
+  var undefined = (function() {}());
+
+  var is = Object.is;
+
+  var hasOwnProperty = (function() {
+    var fn = Object.prototype.hasOwnProperty;
+    return function(obj, prop) {
+      return fn.call(obj, prop);
+    };
+  }());
+
+  var arrayShallowCopy = function(arr) {
+    // https://stackoverflow.com/a/20547803/6815417
+    return arr.slice();
+  };
 
   var ActionRecord = (function() {
 
@@ -57,17 +74,18 @@ this.app = (function(root) {
 
       this._do_callback = do_callback;
       this._undo_callback = undo_callback;
-      this._memento = {};
     };
 
     CallbackAction.prototype = {};
 
     CallbackAction.prototype.do = function() {
+      this._memento = {};
       this._do_callback(this._memento);
     };
 
     CallbackAction.prototype.undo = function() {
       this._undo_callback(this._memento);
+      delete this._memento;
     };
 
     return CallbackAction;
@@ -77,29 +95,31 @@ this.app = (function(root) {
 
     var doEnter = function(memento) {
 
-      memento.on_stack = this._state_props.on_stack;
-      memento.visited = this._state_props.visited;
+      memento.on_stack = this.state.on_stack;
+      memento.visited = this.state.visited;
 
-      this._state_props.on_stack = true;
-      this._state_props.visited = true;
+      this.state.on_stack = true;
+      this.state.visited = true;
 
       this.notifyObservers();
     };
 
     var undoEnter = function(memento) {
 
-      this._state_props.on_stack = memento.on_stack;
-      this._state_props.visited = memento.visited;
+      this.state.on_stack = memento.on_stack;
+      this.state.visited = memento.visited;
 
       this.notifyObservers();
     };
 
-    function DigraphVertex() {
+    function DigraphVertex(simulation_context) {
       this._adjacent_nodes = [];
 
-      this._state_props = {};
-      this._state_props.on_stack = false;
-      this._state_props.visited = false;
+      this._context = simulation_context;
+
+      this.state = {};
+      this.state.on_stack = false;
+      this.state.visited = false;
     };
 
     DigraphVertex.prototype = {};
@@ -115,11 +135,11 @@ this.app = (function(root) {
     };
 
     DigraphVertex.prototype.signalEntered = function() {
-      // TODO: implement this as a recorded action.
+      this._context.action_record.appendAction(CallbackAction(doEnter.bind(this), undoEnter.bind(this)));
     };
 
     DigraphVertex.prototype.signalExited = function() {
-      this._state_props.on_stack = false;
+      this.state.on_stack = false;
       this.notifyObservers();
     };
 

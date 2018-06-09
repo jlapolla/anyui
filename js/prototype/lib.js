@@ -9,6 +9,7 @@ this.anyui = (function(root) {
   var Math = root.Math;
   var Object = root.Object;
   var Set = root.Set;
+  var JSON = root.JSON;
   var undefined = (function() {}());
 
   var is = Object.is;
@@ -19,6 +20,11 @@ this.anyui = (function(root) {
       return fn.call(obj, prop);
     };
   }());
+
+  var deepCopy = function(obj) {
+    // https://stackoverflow.com/a/5344074/6815417
+    return JSON.parse(JSON.stringify(obj));
+  };
 
   var applyMixin = function(target_class, mixin_class) {
 
