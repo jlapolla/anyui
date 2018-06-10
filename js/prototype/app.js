@@ -93,7 +93,23 @@ this.app = (function(root) {
 
   var DigraphVertex = (function() {
 
-    var doEnter = function(memento) {
+    var doAddAdjacentVertex = function(digraph_vertex, memento) {
+
+      memento.adjacent_nodes = arrayShallowCopy(this._adjacent_vertices);
+
+      this._adjacent_vertices.push(digraph_vertex);
+
+      this.notifyObservers();
+    };
+
+    var undoAddAdjacentVertex = function(memento) {
+
+      this._adjacent_vertices = memento.adjacent_nodes;
+
+      this.notifyObservers();
+    };
+
+    var doSignalEntered = function(memento) {
 
       memento.on_stack = this.state.on_stack;
       memento.visited = this.state.visited;
@@ -104,7 +120,7 @@ this.app = (function(root) {
       this.notifyObservers();
     };
 
-    var undoEnter = function(memento) {
+    var undoSignalEntered = function(memento) {
 
       this.state.on_stack = memento.on_stack;
       this.state.visited = memento.visited;
@@ -113,7 +129,7 @@ this.app = (function(root) {
     };
 
     function DigraphVertex(simulation_context) {
-      this._adjacent_nodes = [];
+      this._adjacent_vertices = [];
 
       this._context = simulation_context;
 
@@ -126,16 +142,21 @@ this.app = (function(root) {
     anyui.applyMixin(DigraphVertex, anyui.ObservableMixin);
 
     DigraphVertex.prototype.addAdjacentVertex = function(digraph_vertex) {
-      this._adjacent_nodes.push(digraph_vertex);
-      this.notifyObservers();
+      this._context.action_record.appendAction(CallbackAction(
+        doAddAdjacentVertex.bind(this, digraph_vertex),
+        undoAddAdjacentVertex.bind(this)
+      ));
     };
 
     DigraphVertex.prototype.getAdjacentVertices = function() {
-      return this._adjacent_nodes;
+      return this._adjacent_vertices;
     };
 
     DigraphVertex.prototype.signalEntered = function() {
-      this._context.action_record.appendAction(CallbackAction(doEnter.bind(this), undoEnter.bind(this)));
+      this._context.action_record.appendAction(CallbackAction(
+        doSignalEntered.bind(this),
+        undoSignalEntered.bind(this)
+      ));
     };
 
     DigraphVertex.prototype.signalExited = function() {
@@ -144,6 +165,39 @@ this.app = (function(root) {
     };
 
     return DigraphVertex;
+  }());
+
+  var Digraph = (function() {
+
+    function Digraph(num_vertices, simulation_context) {
+
+      this._vertex_map = Digraph.createVertexMap(num_vertices, simulation_context);
+      this._adjacency_list = 
+
+      this._context = simulation_context;
+    };
+
+    Digraph.createVertexMap = function(num_vertices, simulation_context) {
+      // assert(num_vertices >= 0)
+      map = [];
+      while (num_vertices > 0) {
+        map.push(new DigraphVertex(simulation_context));
+        --num_vertices;
+      }
+      return map;
+    };
+
+    Digraph.createAdjacencyList = function(num_vertices) {
+      // assert(num_vertices >= 0)
+      adj = [];
+      while (num_vertices > 0) {
+        adj.push([]);
+      }
+    };
+
+    Digraph.prototype = {};
+
+    return Digraph;
   }());
 
   var DirectedDepthFirstTraversal = (function() {
