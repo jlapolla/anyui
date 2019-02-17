@@ -12,13 +12,34 @@ this.anyui = (function(root) {
   var JSON = root.JSON;
   var undefined = (function() {}());
 
+  ///
+  /// Functions
+  ///
+
   var is = Object.is;
 
-  var BatchEvent = (function() {
+  var callFunction = function(callback) {
+    callback();
+  };
 
-    var callFunction = function(callback) {
-      callback();
-    };
+  var applyMixinTo = function(target_class) {
+    for (var name in this.prototype) {
+      if (is(name, 'constructor')) {
+        continue;
+      }
+      target_class.prototype[name] = this.prototype[name];
+    }
+  };
+
+  var makeMixin = function(mixin_class) {
+    mixin_class.applyMixinTo = applyMixinTo.bind(mixin_class);
+  }
+
+  ///
+  /// Classes
+  ///
+
+  var BatchEvent = (function() {
 
     ///
     /// Private methods
@@ -40,11 +61,11 @@ this.anyui = (function(root) {
       this._dequeue_callback = _dequeue.bind(this);
     };
 
+    BatchEvent.prototype = {};
+
     ///
     /// Public methods
     ///
-
-    BatchEvent.prototype = {};
 
     BatchEvent.prototype.addCallback = function(callback) {
       this._callbacks.push(callback)
@@ -74,6 +95,40 @@ this.anyui = (function(root) {
     return BatchEvent;
   }());
   module.BatchEvent = BatchEvent;
+
+  var Observable = (function() {
+
+    ///
+    /// Constructor
+    ///
+
+    function Observable() {
+      this._callbacks = new Set();
+    };
+
+    Observable.prototype = {};
+
+    makeMixin(Observable);
+
+    ///
+    /// Public methods
+    ///
+
+    Observable.prototype.addCallback = function(callback) {
+      this._callbacks.add(callback);
+    };
+
+    Observable.prototype.removeCallback = function(callback) {
+      this._callbacks.delete(callback);
+    };
+
+    Observable.prototype.runCallbacks = function() {
+      this._callbacks.forEach(callFunction);
+    };
+
+    return Observable;
+  }());
+  module.Observable = Observable;
 
   return module;
 }(this));
