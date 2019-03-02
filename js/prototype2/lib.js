@@ -130,5 +130,40 @@ this.anyui = (function(root) {
   }());
   module.Observable = Observable;
 
+  var Global = (function() {
+
+    ///
+    /// Constructor
+    ///
+
+    function Global() {
+      this._batch_event = null;
+    };
+
+    Global.prototype = {};
+
+    ///
+    /// Public methods
+    ///
+
+    Global.prototype.getBatchEvent = function() {
+      return this._batch_event;
+    };
+
+    Global.prototype.setBatchEvent = function(value) {
+      this._batch_event = value;
+    };
+
+    return Global;
+  }());
+  module.Global = Global;
+
+  ///
+  /// Set up globals
+  ///
+
+  module.globals = new Global();
+  module.globals.setBatchEvent(new BatchEvent());
+
   return module;
 }(this));
