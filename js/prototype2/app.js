@@ -27,8 +27,8 @@ this.app = (function(root) {
       anyui.Observable.call(this);
       this._value = '';
     };
-
-    anyui.Observable.applyMixinTo(Text);
+    anyui.makeClass(Text);
+    Text.mixinClass(anyui.Observable);
 
     Text.prototype.getValue = function() {
       return this._value;
@@ -48,6 +48,7 @@ this.app = (function(root) {
       this._text = null;
       this._on_text_changed_callback = this.alertText.bind(this);
     };
+    anyui.makeClass(TextAlerter);
 
     TextAlerter.prototype.getText = function() {
       return this._text;

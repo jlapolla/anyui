@@ -22,18 +22,28 @@ this.anyui = (function(root) {
     callback();
   };
 
-  var applyMixinTo = function(target_class) {
-    for (var name in this.prototype) {
-      if (is(name, 'constructor')) {
-        continue;
+  var extendClass = function(base_class) {
+
+    function DummyClass() {};
+    DummyClass.prototype = base_class.prototype;
+
+    this.prototype = new DummyClass();
+    this.prototype.constructor = this;
+  };
+
+  var mixinClass = function(mixin_class) {
+    for (var name in mixin_class.prototype) {
+      if (!is(name, 'constructor')) {
+        this.prototype[name] = mixin_class.prototype[name];
       }
-      target_class.prototype[name] = this.prototype[name];
     }
   };
 
-  var makeMixin = function(mixin_class) {
-    mixin_class.applyMixinTo = applyMixinTo.bind(mixin_class);
-  }
+  var makeClass = function(constructor) {
+    constructor.extendClass = extendClass;
+    constructor.mixinClass = mixinClass;
+  };
+  module.makeClass = makeClass;
 
   ///
   /// Classes
@@ -60,6 +70,7 @@ this.anyui = (function(root) {
       this._timeout_id = null;
       this._dequeue_callback = _dequeue.bind(this);
     };
+    makeClass(BatchEvent);
 
     ///
     /// Public methods
@@ -103,8 +114,7 @@ this.anyui = (function(root) {
     function Observable() {
       this._callbacks = new Set();
     };
-
-    makeMixin(Observable);
+    makeClass(Observable);
 
     ///
     /// Public methods
@@ -135,6 +145,7 @@ this.anyui = (function(root) {
     function Global() {
       this._batch_event = null;
     };
+    makeClass(Global);
 
     ///
     /// Public methods
