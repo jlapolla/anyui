@@ -28,8 +28,6 @@ this.app = (function(root) {
       this._value = '';
     };
 
-    Text.prototype = {};
-
     anyui.Observable.applyMixinTo(Text);
 
     Text.prototype.getValue = function() {
@@ -50,8 +48,6 @@ this.app = (function(root) {
       this._text = null;
       this._on_text_changed_callback = this.alertText.bind(this);
     };
-
-    TextAlerter.prototype = {};
 
     TextAlerter.prototype.getText = function() {
       return this._text;

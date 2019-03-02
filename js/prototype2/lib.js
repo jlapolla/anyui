@@ -61,8 +61,6 @@ this.anyui = (function(root) {
       this._dequeue_callback = _dequeue.bind(this);
     };
 
-    BatchEvent.prototype = {};
-
     ///
     /// Public methods
     ///
@@ -106,8 +104,6 @@ this.anyui = (function(root) {
       this._callbacks = new Set();
     };
 
-    Observable.prototype = {};
-
     makeMixin(Observable);
 
     ///
@@ -139,8 +135,6 @@ this.anyui = (function(root) {
     function Global() {
       this._batch_event = null;
     };
-
-    Global.prototype = {};
 
     ///
     /// Public methods
